@@ -1,0 +1,9 @@
+{
+  "name": "util-scripts",
+  "dependencies":{
+    "xml2js":"*",
+    "yargs": "3.31.0",
+    "yamljs": "*",
+    "sync-request": "*"
+  }
+}
