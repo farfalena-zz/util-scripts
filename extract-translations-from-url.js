@@ -13,6 +13,9 @@ var argv = require('yargs')
   .alias('d', 'outputDir')
   .nargs('d', 1)
   .describe('d', 'Specify the output directory')
+  .alias('m', 'mapping')
+  .nargs('m', 1)
+  .describe('m', 'Specify an object to map found codes to new ones')
   .argv;
 var fs = require('fs')
 var YAML = require('yamljs')
@@ -23,6 +26,9 @@ var i18n_root_pattern = /^define\({"root": ([^}]*}).*\);$/
 var i18n_trans_pattern = /^define\((.*)\);$/
 var languages = require('./languages.json')
 
+if (!_.isUndefined(argv.mapping)){
+  var mapping = JSON.parse(argv.mapping)
+}
 var localizations = {}
 
 for (var i in languages) {
@@ -31,8 +37,8 @@ for (var i in languages) {
   if (language=='en'){
     url = url.replace(/\/[a-z]{2}\//,'/')
   }
-
-  var response = sync('GET',url)
+  console.log('GET '+ url + '...');
+  var response = sync('GET', url)
 
   if (response.statusCode!=200) {
     console.log('Unsuccessful call to URL '+url+ '. Status code '+response.statusCode)
@@ -44,6 +50,14 @@ for (var i in languages) {
   if (!_.isEmpty(contents)){
     if (_.isUndefined(localizations[language])){
       localizations[language] = {}
+    }
+    contents = _.mapValues(contents, function(v) {
+      return v.trim()
+    })
+    if (!_.isUndefined(mapping)){
+      contents = _.mapKeys(contents, function(value, key) {
+        return _.isUndefined(mapping[key]) ? key : mapping[key]
+      })
     }
     localizations[language] = contents
   }
