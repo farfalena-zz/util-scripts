@@ -17,6 +17,9 @@ var argv = require('yargs')
   .alias('t', 'type')
   .nargs('t', 1)
   .describe('t', 'Specify the XSD SimpleType')
+  .alias('m', 'mapping')
+  .nargs('m', 1)
+  .describe('m', 'Specify an object to map found codes to new ones')
   .argv;
 var fs = require('fs')
 var xml2js = require('xml2js')
@@ -26,6 +29,9 @@ var _ = require('lodash')
 var pattern = {
   languages: /^[a-z]{2}$/,
   countries: /^[A-Z]{2}$/
+}
+if (!_.isUndefined(argv.mapping)){
+  var mapping = JSON.parse(argv.mapping)
 }
 
 console.log('Extracting '+argv.output+' and type ' + argv.type)
@@ -59,6 +65,10 @@ parser.parseString(filedata, function(error, result) {
     if (code.match(pattern[argv.output])==null) {
       continue;
     }
+    // See if there is a mapping for this code
+    if (!_.isUndefined(mapping) && !_.isUndefined(mapping[code])){
+      code = mapping[code]
+    }
 
     var documentation = codeInfo['xsd:annotation'][0]['xsd:documentation']
 
@@ -76,6 +86,20 @@ parser.parseString(filedata, function(error, result) {
     }
   }
   // console.log(localizations)
+
+  // Enrich en with ISO list
+  if (argv.output == 'countries') {
+    var iso_countries = require('./iso-3166-countries.json')
+    for (var iso_country in iso_countries) {
+      if (_.isEmpty(iso_country)) {
+        continue
+      }
+      if (_.isUndefined(localizations['en'][iso_country])) {
+        localizations['en'][iso_country] = iso_countries[iso_country]
+      }
+    }
+    console.log(localizations['en'])
+  }
 
   // Write each one to seperate file
   console.log('Translation Languages: '+_.keys(localizations))

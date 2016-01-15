@@ -24,15 +24,16 @@ var sync = require('sync-request')
 
 var i18n_root_pattern = /^define\({"root": ([^}]*}).*\);$/
 var i18n_trans_pattern = /^define\((.*)\);$/
-var languages = require('./languages.json')
+var locales = require('./locales.json')
 
 if (!_.isUndefined(argv.mapping)){
   var mapping = JSON.parse(argv.mapping)
 }
 var localizations = {}
 
-for (var i in languages) {
-  var language = languages[i]
+for (var i in locales) {
+  var locale = locales[i]
+  var language = locale.match(/^([a-z]{2}).*$/)[1]
   var url = argv.url.replace(/\/[a-z]{2}\//,'/'+language+'/')
   if (language=='en'){
     url = url.replace(/\/[a-z]{2}\//,'/')
@@ -48,8 +49,8 @@ for (var i in languages) {
   var contents = JSON.parse(body.match(language=='en'? i18n_root_pattern : i18n_trans_pattern)[1])
 
   if (!_.isEmpty(contents)){
-    if (_.isUndefined(localizations[language])){
-      localizations[language] = {}
+    if (_.isUndefined(localizations[locale])){
+      localizations[locale] = {}
     }
     contents = _.mapValues(contents, function(v) {
       return v.trim()
@@ -59,12 +60,12 @@ for (var i in languages) {
         return _.isUndefined(mapping[key]) ? key : mapping[key]
       })
     }
-    localizations[language] = contents
+    localizations[locale] = contents
   }
 }
 // console.log(localizations)
 // Write each one to seperate file
-console.log('Translation Languages: '+_.keys(localizations))
+console.log('Translation Locales: '+_.keys(localizations))
 for (var locale in localizations) {
   var filePath = argv.outputDir + '/'+ argv.output + '.' + locale + '.yml'
   var output = {}
