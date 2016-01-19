@@ -43,9 +43,6 @@ try {
 
 // Follow linked keys and replace them with the actual values
 function replaceKey(key, value) {
-  // if (_.isNull(value)){
-  //   _.set(ymlData, key, '** CHECK THIS **')
-  // }
   if (_.isString(value) && /^\-\w/.test(value)) {
     //Get
     var valueKey = locale + '.' + value.substring(1)
