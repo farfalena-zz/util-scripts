@@ -31,6 +31,7 @@ try {
   var filePath = argv.outputDir + '/'+ argv.output + '.' + locale + '.yml'
   var out = {}
   out[localeWithUnderscore] = ymlData[locale]
+
   var outStr = YAML.stringify(out, 8, 2)
   outStr = outStr.replace(/\s*null/g,'')
   fs.writeFileSync(filePath, outStr)
@@ -43,13 +44,19 @@ try {
 
 // Follow linked keys and replace them with the actual values
 function replaceKey(key, value) {
-  if (_.isString(value) && /^\-\w/.test(value)) {
-    //Get
-    var valueKey = locale + '.' + value.substring(1)
+  if (_.isString(value)) {
+    if (/^\-\w/.test(value)) {
+      //Get
+      var valueKey = locale + '.' + value.substring(1)
 
-    //Set
-    var replacedValue = _.get(ymlData, valueKey, value)
-    _.set(ymlData, key, replacedValue)
+      //Set
+      var replacedValue = _.get(ymlData, valueKey, value)
+      _.set(ymlData, key, replacedValue)
+    } else {
+      // Trim
+      var trimmedValue = _.get(ymlData, key, value).trim()
+      _.set(ymlData, key, trimmedValue.length==0?null:trimmedValue)
+    }
   }
 }
 
