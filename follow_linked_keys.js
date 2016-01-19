@@ -24,11 +24,16 @@ try {
   var ymlData = YAML.load(argv.f)
 
   var locale = Object.keys(ymlData)[0]
+  var localeWithUnderscore = locale.replace(/\-/,'_')
 
   traverse('', ymlData, replaceKey)
 
   var filePath = argv.outputDir + '/'+ argv.output + '.' + locale + '.yml'
-  fs.writeFileSync(filePath, YAML.stringify(ymlData, 8, 2))
+  var out = {}
+  out[localeWithUnderscore] = ymlData[locale]
+  var outStr = YAML.stringify(out, 8, 2)
+  outStr = outStr.replace(/\s*null/g,'')
+  fs.writeFileSync(filePath, outStr)
 
 } catch (ex) {
   console.log('Failed to read/write file at '+argv.f)
@@ -39,7 +44,7 @@ try {
 // Follow linked keys and replace them with the actual values
 function replaceKey(key, value) {
   // if (_.isNull(value)){
-  //   _.set(ymlData, key, '')
+  //   _.set(ymlData, key, '** CHECK THIS **')
   // }
   if (_.isString(value) && /^\-\w/.test(value)) {
     //Get
