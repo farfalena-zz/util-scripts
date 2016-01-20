@@ -44,6 +44,10 @@ try {
 
 // Follow linked keys and replace them with the actual values
 function replaceKey(key, value) {
+  if (_.isNull(value)) {
+    //Set the keypath
+    _.set(ymlData, key, key)
+  }
   if (_.isString(value)) {
     if (/^\-\w/.test(value)) {
       //Get

@@ -90,14 +90,14 @@ for (var i in locales) {
             v_obj[(parseInt(l)+1)] = v[l].trim()
           }
           return v_obj
-        } else {
+        } else if (_.isString(v)) {
           return v.trim()
+        } else {
+          return v;
         }
       })
       if (!_.isUndefined(mapping)){
-        contents = _.mapKeys(contents, function(value, key) {
-          return _.isUndefined(mapping[key]) ? key : mapping[key]
-        })
+        contents = mapKeys(contents, mapping)
       }
       // Check for jsonpath keys
       var toRemove = []
@@ -126,7 +126,7 @@ for (var locale in localizations) {
   var filePath = argv.outputDir + '/'+ argv.output + '.' + locale + '.yml'
   var output = {}
   output[locale] = localizations[locale]
-  fs.writeFileSync(filePath, YAML.stringify(output, 4, 2))
+  fs.writeFileSync(filePath, YAML.stringify(output, 6, 2))
 }
 
 function deepFill (key, value, object) {
@@ -141,4 +141,28 @@ function deepFill (key, value, object) {
   } else {
     object[parts[0]] = value
   }
+}
+
+function mapKeys(obj, mapping){
+    var mapped, key, destKey, ix, value;
+
+    mapped = {};
+    for (key in obj) {
+        destKey = mapping[key] || key;
+
+        if (destKey.indexOf('.')>-1){
+          var result = {}
+          deepFill(destKey, obj[key], result)
+          _.merge(mapped, result)
+        }
+
+        value = obj[key];
+
+        if (typeof value === "object") {
+            value = mapKeys(value, mapping);
+        }
+
+        _.set(mapped, destKey, value);
+    }
+    return mapped;
 }
