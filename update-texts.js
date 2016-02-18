@@ -58,9 +58,9 @@ for (var locale in updatedAll) {
   fs.writeFileSync(filePath, YAML.stringify(output, 8, 2))
 }
 console.log('Write default file (en-updated) under' + argv.outputDir + '...')
-// Write en
+// // Write en
 var legacyEnUsTexts = YAML.load(argv.legacyDir+'/en-US.yml')
-var enTexts = Object.assign({},YAML.load(argv.nextDir+'/'+nextName+'.en.yml')['en'])
+var enTexts = {}// Object.assign({},YAML.load(argv.nextDir+'/'+nextName+'.en.yml')['en'])
 Object.keys(updates).reduce(function(obj, keypath){
   var value = updates[keypath]
   var enValue = _.get(obj, keypath)
@@ -76,7 +76,7 @@ var enFilePath = argv.outputDir + '/'+ outputName + '.updated-en.yml'
 var enOutput = {}
 enOutput.en = enTexts
 // console.log(enOutput)
-fs.writeFileSync(enFilePath, YAML.stringify(enOutput, 8, 2))
+fs.writeFileSync(argv.outputDir + '/updates.yml', YAML.stringify(enOutput, 8, 2))
 
 function update(prefix, currentObj, legacyObj, nextObj, updatedObj, updatedKeys){
   for (var key in currentObj) {
